@@ -2,25 +2,30 @@ import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi
 import re
 from openai import OpenAI
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # OpenAI API 키 설정
-if 'OPENAI_API_KEY' not in st.secrets:
-    st.error('OpenAI API 키가 설정되지 않았습니다.')
+api_key = st.secrets.get('OPENAI_API_KEY') or os.getenv('OPENAI_API_KEY')
+
+if not api_key:
+    st.error('OpenAI API 키가 설정되지 않았습니다. secrets.toml 파일이나 환경변수에 OPENAI_API_KEY를 설정해주세요.')
     st.stop()
 
-client = OpenAI(api_key=st.secrets['OPENAI_API_KEY'])
+client = OpenAI(api_key=api_key)
 
 def summarize_text(text):
     try:
         response = client.chat.completions.create(
-            model="gpt-4.0-mini",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that summarizes text in Korean."},
                 {"role": "user", "content": f"다음 텍스트를 한국어로 간단히 요약해주세요:\n\n{text}"}
             ],
             max_tokens=500
         )
-        print(response.choices[0].message.content)
+        
         return response.choices[0].message.content
     except Exception as e:
         st.error(f"요약 중 오류가 발생했습니다: {str(e)}")

@@ -3,3 +3,5 @@ __pycache__/
 .DS_Store
 .vscode/
 .streamlit/
+.env
+.streamlit/secrets.toml
