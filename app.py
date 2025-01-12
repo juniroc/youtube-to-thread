@@ -7,8 +7,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # OpenAI API 키 설정
-api_key = st.secrets.get('OPENAI_API_KEY') or os.getenv('OPENAI_API_KEY')
-
+try:
+    api_key = os.getenv('OPENAI_API_KEY')
+except:
+    api_key = st.secrets.get('OPENAI_API_KEY')
+    
 if not api_key:
     st.error('OpenAI API 키가 설정되지 않았습니다. secrets.toml 파일이나 환경변수에 OPENAI_API_KEY를 설정해주세요.')
     st.stop()
@@ -22,6 +25,7 @@ def summarize_text(text):
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that summarizes text in Korean."},
                 {"role": "user", "content": f"다음 텍스트를 한국어로 간단히 요약해주세요:\n\n{text}"}
+                
             ],
             max_tokens=500
         )
@@ -46,6 +50,29 @@ def get_transcript(video_id):
         return transcript
     except Exception as e:
         return None
+
+def format_summary_for_thread(summary):
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "온라인 커뮤니티에서 사용하기 좋은 포맷으로 텍스트를 변환하는 assistant입니다."},
+                {"role": "user", "content": f"""
+                다음 텍스트를 온라인 커뮤니티 형식으로 변환해주세요:
+                - 제목/요약을 맨 위에 굵게 표시
+                - 중요 포인트는 번호를 매겨서 정리
+                - 각 포인트는 간단명료하게
+                - 마지막에 TLDR 추가
+                
+                텍스트: {summary}
+                """}
+            ],
+            max_tokens=1000
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        st.error(f"포맷 변환 중 오류가 발생했습니다: {str(e)}")
+        return summary
 
 # Streamlit 앱 제목
 st.title('YouTube 자막 추출기')
@@ -92,7 +119,12 @@ if search_button and youtube_url:
                         if summary:
                             st.subheader('요약 내용:')
                             st.write(summary)
-                            print(summary)
+                            
+                            # 포맷 변환된 요약 표시
+                            with st.spinner('요약 내용을 포맷에 맞게 변환하고 있습니다...'):
+                                formatted_summary = format_summary_for_thread(summary)
+                                st.subheader('쓰레드 형식 요약:')
+                                st.markdown(formatted_summary)
                         else:
                             st.error('요약을 생성하는데 실패했습니다.')
                     except Exception as e:
