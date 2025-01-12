@@ -27,7 +27,6 @@ def summarize_text(text):
                 {"role": "user", "content": f"다음 텍스트를 한국어로 간단히 요약해주세요:\n\n{text}"}
                 
             ],
-            max_tokens=500
         )
         
         return response.choices[0].message.content
