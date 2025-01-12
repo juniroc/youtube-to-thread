@@ -1,6 +1,31 @@
 import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi
 import re
+from openai import OpenAI
+
+# OpenAI API 키 설정
+if 'OPENAI_API_KEY' not in st.secrets:
+    st.error('OpenAI API 키가 설정되지 않았습니다.')
+    st.stop()
+
+client = OpenAI(api_key=st.secrets['OPENAI_API_KEY'])
+
+def summarize_text(text):
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.0-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that summarizes text in Korean."},
+                {"role": "user", "content": f"다음 텍스트를 한국어로 간단히 요약해주세요:\n\n{text}"}
+            ],
+            max_tokens=500
+        )
+        print(response.choices[0].message.content)
+        return response.choices[0].message.content
+    except Exception as e:
+        st.error(f"요약 중 오류가 발생했습니다: {str(e)}")
+        print(f"Error details: {e}")
+        return None
 
 def extract_video_id(youtube_url):
     # YouTube URL에서 video ID를 추출하는 함수
@@ -45,7 +70,7 @@ if search_button and youtube_url:
             
             # 자막 텍스트 표시
             st.subheader('자막 내용:')
-             .
+            
             # 전체 자막 텍스트를 하나의 문자열로 결합
             full_text = ''
             for entry in transcript:
@@ -53,6 +78,22 @@ if search_button and youtube_url:
             
             # 자막 텍스트를 텍스트 영역에 표시
             st.text_area('전체 자막', full_text, height=300)
+            
+            # 요약 버튼
+            if full_text.strip():
+                with st.spinner('내용을 요약하고 있습니다...'):
+                    try:
+                        summary = summarize_text(full_text)
+                        if summary:
+                            st.subheader('요약 내용:')
+                            st.write(summary)
+                            print(summary)
+                        else:
+                            st.error('요약을 생성하는데 실패했습니다.')
+                    except Exception as e:
+                        st.error(f'요약 처리 중 오류가 발생했습니다: {str(e)}')
+            else:
+                st.warning('요약할 텍스트가 없습니다.')
             
             # CSV 다운로드 버튼
             st.download_button(
