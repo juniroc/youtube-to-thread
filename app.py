@@ -75,7 +75,7 @@ def format_summary_for_thread(summary):
         return summary
 
 # Streamlit 앱 제목
-st.title('YouTube 자막 추출기')
+st.title('YouTube To Thread Converter')
 
 # 입력 필드와 검색 버튼을 나란히 배치하기 위한 컬럼 생성
 container = st.container()
