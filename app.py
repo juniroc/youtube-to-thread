@@ -143,7 +143,7 @@ if search_button and youtube_url:
                 mime="text/plain"
             )
         else:
-            st.error('자막을 가져올 수 없습니다. 해당 동영상에 자막이 없거나 접근이 제한되어 있을 수 있습니다.')
+            st.error(f'자막을 가져올 수 없습니다. 해당 동영상에 자막이 없거나 접근이 제한되어 있을 수 있습니다. : transcript : {transcript}')
     else:
         st.error('올바른 YouTube URL을 입력해주세요.')
 elif search_button and not youtube_url:
