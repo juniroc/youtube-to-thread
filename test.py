@@ -81,12 +81,7 @@ col1, col2 = container.columns([4, 1])
 
 with col1:
     # YouTube URL 입력 필드
-    youtube_url = st.text_input(
-        label='YouTube URL',
-        placeholder='YouTube URL을 입력하세요',
-        key='url_input',
-        label_visibility='collapsed'
-    )
+    youtube_url = st.text_input('', placeholder='YouTube URL을 입력하세요', key='url_input', label_visibility='collapsed')
 
 with col2:
     # 검색 버튼 (container를 사용하여 수직 정렬)
@@ -95,25 +90,25 @@ with col2:
 # 검색 버튼을 클릭했을 때만 실행
 if search_button and youtube_url:
     video_id = extract_video_id(youtube_url)
-
+    
     if video_id:
         transcript = get_transcript(video_id)
-
+        
         if transcript:
             # 영상 미리보기 표시
             st.video(youtube_url)
-
+            
             # 자막 텍스트 표시
             st.subheader('자막 내용:')
-
+            
             # 전체 자막 텍스트를 하나의 문자열로 결합
             full_text = ''
             for entry in transcript:
                 full_text += entry['text'] + '\n'
-
+            
             # 자막 텍스트를 텍스트 영역에 표시
             st.text_area('전체 자막', full_text, height=300)
-
+            
             # 요약 버튼
             if full_text.strip():
                 with st.spinner('내용을 요약하고 있습니다...'):
